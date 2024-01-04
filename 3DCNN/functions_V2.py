@@ -1,4 +1,3 @@
-  
 import os
 import numpy as np
 from PIL import Image
@@ -42,8 +41,10 @@ class Dataset_3DCNN(data.Dataset):
 
     def read_images(self, path, selected_folder, use_transform):
         X = []
-        for i in self.frames:
-            image = Image.open(os.path.join(path, selected_folder, 'image-slice{:03d}.jpg'.format(i))).convert('L')
+        folder_path = os.path.join(path, selected_folder,'T1w')
+        for image_name in os.listdir(folder_path):
+            # if image_name.lower().endswith('.jpg') or image_name.lower().endswith('.jpeg'):
+            image = Image.open(os.path.join(path, selected_folder,'T1w',image_name)).convert('L')
 
             if use_transform is not None:
                 image = use_transform(image)
@@ -62,7 +63,6 @@ class Dataset_3DCNN(data.Dataset):
         X = self.read_images(self.data_path, folder, self.transform).unsqueeze_(0)  # (input) spatial images
         y = torch.LongTensor([self.labels[index]])                             # (labels) LongTensor are for int64 instead of FloatTensor
 
-        # print(X.shape)
         return X, y
 
 
@@ -120,7 +120,7 @@ class CNN3D(nn.Module):
         
         self.ch1, self.ch2,self.ch3,self.ch4 ,self.ch5 = 48, 64 , 80 , 64, 48
         self.k1, self.k2, self.k3, self.k4, self.k5= (3, 3, 3),(3,3, 3), (3, 3, 3), (3, 3, 3) , (3, 3, 3)# 3d kernel size
-        self.s1, self.s2, self.s3, self.s4, self.s5= (1, 1, 1), (2, 2, 2) ,(2, 2, 2), (2, 2, 2) , (2, 2, 2)# 3d strides
+        self.s1, self.s2, self.s3, self.s4, self.s5= (1, 1, 1), (1, 2, 2) ,(1, 2, 2), (1, 2, 2) , (1, 2, 2)# 3d strides
         self.pd1, self.pd2,self.pd3,self.pd4,self.pd5= (0, 0, 0), (0, 0, 0),(0, 0, 0), (0, 0, 0) , (0, 0, 0) # 3d padding
 
         # compute conv1 & conv2 output shape

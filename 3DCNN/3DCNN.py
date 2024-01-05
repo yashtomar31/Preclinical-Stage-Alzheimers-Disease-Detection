@@ -18,9 +18,10 @@ from numpy import save
 torch.cuda.empty_cache()
 
 # set path
-data_path = "/home/faltay/3DCNN/Dataset_Brain_Binary_Variation"    
-dementia_labels_path = "/home/faltay/3DCNN/Labels_Binary.pkl"  # load preprocessed dementia types
-save_model_path = "/home/faltay/3DCNN/Results_9"  # save Pytorch models
+data_path = "/Users/yashtomar/Desktop/projects/gsa/Preclinical-Stage-Alzheimers-Disease-Detection/oasis"    
+dementia_labels_path = "/Users/yashtomar/Desktop/projects/gsa/Preclinical-Stage-Alzheimers-Disease-Detection/3DCNN/Labels_Binary.pkl"  # load preprocessed dementia types
+demential_train_file_label = "/Users/yashtomar/Desktop/projects/gsa/Preclinical-Stage-Alzheimers-Disease-Detection/oasis/train.txt"  
+save_model_path = "/Users/yashtomar/Desktop/projects/gsa/Preclinical-Stage-Alzheimers-Disease-Detection" 
 
 # 3D CNN parameters
 fc_hidden1, fc_hidden2 = 256, 256
@@ -35,7 +36,7 @@ log_interval = 10
 img_x, img_y = 115 ,115  # resize video 2d frame size
 
 # Select which frame to begin & end in videos
-begin_frame, end_frame, skip_frame = 70, 190, 1
+begin_frame, end_frame, skip_frame = 135, 151, 0
 
 #train(log_interval, cnn3d, device_2, train_loader_2, optimizer, epoch)
 def train(log_interv_3, model_3, device_3, train_loader_3, optimizer_3, epoch_3):
@@ -151,14 +152,16 @@ fnames = os.listdir(data_path)
 
 all_names = []
 for f in fnames:
-    if f != ".ipynb_checkpoints": 
+    if f != ".ipynb_checkpoints" and f != "train.txt" and f != "val.txt" and f != ".DS_Store": 
        
         loc1 = f.find('_')
         test = (f[0: loc1])
-        # Temporarily we do not classify the unknown patients
-        if test != "4" and test != "3":
-            dementia_type.append(f[0: loc1])
-            all_names.append(f)
+        test=test.replace("OAS300","",1)
+        if(int(test)>2):
+            dementia_type.append('1')
+        else:
+            dementia_type.append('0')
+        all_names.append(f)
             
 # list all data files
 all_X_list = all_names              # all video file names
@@ -167,103 +170,11 @@ all_y_list = labels2cat(le, dementia_type)    # all video labels
 # train, test, val split so no patients are repeated 
 
 
-
-patients = []
-labels = []
-prev = []
-index = 0
-
-for pat in all_X_list: 
-    prev.append(pat[2:10])
-for pat in all_X_list: 
-    if pat[2:10] not in patients: 
-        index = prev.index(pat[2:10])        
-
-        patients.append(pat[2:10])
-        labels.append(dementia_type[index])
-        
-## Undersampling process 
-i = 0
-for lab in labels: 
-    if lab == "0":
-        undersampling = np.random.choice([2,5], p=[0.9, 0.1])
-        if undersampling ==2:
-            del labels[i]
-            del patients[i]
-
-
-    i = i + 1
-i = 0
-
-for lab in labels: 
-    if lab == "0":
-        undersampling = np.random.choice([2,5], p=[0.4, 0.6])
-        if undersampling ==2:
-            del labels[i]
-            del patients[i]
-
-
-    i = i + 1
- 
-
-
-    
+patients = all_X_list
+labels = all_y_list
 train_list_prev, val_list, train_label_prev, val_label = train_test_split(patients, labels, test_size=0.20, random_state=42)
 train_list,test_list , train_label, test_label = train_test_split(train_list_prev, train_label_prev, test_size=0.15, random_state=42) 
 
-
-
-
-# Training set (To match patients with scanners)
-
-train_list_def = []
-train_label_def = []
-
-for pat in train_list:
-    for scan in all_X_list: 
-        if pat == scan[2:10]:
-            train_list_def.append(scan)
-            
-for scan in train_list_def: 
-    index = all_X_list.index(scan)        
-    train_label_def.append(dementia_type[index])
-
-train_list = train_list_def
-train_label = np.array(train_label_def).astype(np.int)   
-
-# Validation set 
-
-val_list_def = []
-val_label_def = []
-
-for pat in val_list:
-    for scan in all_X_list: 
-        if pat == scan[2:10]:
-            val_list_def.append(scan)
-            
-for scan in val_list_def: 
-    index = all_X_list.index(scan)        
-    val_label_def.append(dementia_type[index])
-
-val_list = val_list_def
-val_label = np.array(val_label_def).astype(np.int)  
-
-# Test set 
-
-test_list_def = []
-test_label_def = []
-
-for pat in test_list:
-    for scan in all_X_list: 
-        if pat == scan[2:10]:
-            test_list_def.append(scan)
-            
-for scan in test_list_def: 
-    index = all_X_list.index(scan)        
-    test_label_def.append(dementia_type[index])
-
-test_list = test_list_def
-test_label = np.array(test_label_def).astype(np.int) 
 
 # print("Size Dataset: ",len(all_X_list))
 # print("Train Dataset: ",len(train_list))

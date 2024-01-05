@@ -22,6 +22,7 @@ data_path = "/Users/yashtomar/Desktop/projects/gsa/Preclinical-Stage-Alzheimers-
 dementia_labels_path = "/Users/yashtomar/Desktop/projects/gsa/Preclinical-Stage-Alzheimers-Disease-Detection/3DCNN/Labels_Binary.pkl"  # load preprocessed dementia types
 demential_train_file_label = "/Users/yashtomar/Desktop/projects/gsa/Preclinical-Stage-Alzheimers-Disease-Detection/oasis/train.txt"  
 save_model_path = "/Users/yashtomar/Desktop/projects/gsa/Preclinical-Stage-Alzheimers-Disease-Detection" 
+demential_val_file_label = "/Users/yashtomar/Desktop/projects/gsa/Preclinical-Stage-Alzheimers-Disease-Detection/oasis/val.txt"  
 
 # 3D CNN parameters
 fc_hidden1, fc_hidden2 = 256, 256
@@ -37,6 +38,21 @@ img_x, img_y = 115 ,115  # resize video 2d frame size
 
 # Select which frame to begin & end in videos
 begin_frame, end_frame, skip_frame = 135, 151, 0
+
+
+def getLabelMapping(demential_train_file_label,demential_val_file_label):
+    dictFolderToLabel = {}
+    with open(demential_train_file_label, 'r') as file:
+        for line in file:
+                folder_name, label = line.strip().split()
+                dictFolderToLabel[folder_name] = label
+    
+    with open(demential_val_file_label, 'r') as file:
+        for line in file:
+                folder_name, label = line.strip().split()
+                dictFolderToLabel[folder_name] = label
+    return(dictFolderToLabel)
+
 
 #train(log_interval, cnn3d, device_2, train_loader_2, optimizer, epoch)
 def train(log_interv_3, model_3, device_3, train_loader_3, optimizer_3, epoch_3):
@@ -150,17 +166,12 @@ enc.fit(action_category)
 dementia_type = []
 fnames = os.listdir(data_path)
 
+dictFolderToLabel = getLabelMapping(demential_train_file_label,demential_val_file_label)
+print(dictFolderToLabel)
 all_names = []
 for f in fnames:
     if f != ".ipynb_checkpoints" and f != "train.txt" and f != "val.txt" and f != ".DS_Store": 
-       
-        loc1 = f.find('_')
-        test = (f[0: loc1])
-        test=test.replace("OAS300","",1)
-        if(int(test)>2):
-            dementia_type.append('1')
-        else:
-            dementia_type.append('0')
+        dementia_type.append(dictFolderToLabel[f])
         all_names.append(f)
             
 # list all data files
@@ -194,7 +205,7 @@ transform = transforms.Compose([transforms.Resize([img_x, img_y]),
                                 transforms.ToTensor(),
                                 transforms.Normalize(mean=[0.5], std=[0.5])])
 
-selected_frames = np.arange(begin_frame, end_frame, skip_frame).tolist()
+selected_frames = np.arange(begin_frame, end_frame).tolist()
 
 train_set  = Dataset_3DCNN(data_path, train_list, train_label, selected_frames, transform=transform)
 valid_set = Dataset_3DCNN(data_path, val_list, val_label, selected_frames, transform=transform)
@@ -296,10 +307,11 @@ for epoch in range(epochs):
     B = np.array(epoch_train_scores)
     C = np.array(epoch_test_losses)
     D = np.array(epoch_test_scores)
-    np.save('/home/faltay/3DCNN/Results_9/3DCNN_epoch_training_losses.npy', A)
-    np.save('/home/faltay/3DCNN/Results_9/3DCNN_epoch_training_scores.npy', B)
-    np.save('/home/faltay/3DCNN/Results_9/3DCNN_epoch_test_loss.npy', C)
-    np.save('/home/faltay/3DCNN/Results_9/3DCNN_epoch_test_score.npy', D)
+    np.save(save_model_path+'3DCNN_epoch_training_losses.npy', A)
+    np.save(save_model_path+'3DCNN_epoch_training_scores.npy', B)
+    np.save(save_model_path+'3DCNN_epoch_test_loss.npy', C)
+    np.save(save_model_path+'3DCNN_epoch_test_score.npy', D)
+   
    
 
 # plot
@@ -313,14 +325,14 @@ plt.ylabel('loss')
 plt.legend(['train', 'test'], loc="upper left")
 # 2nd figure
 plt.subplot(122)
-plt.plot(np.arange(1, epochs + 1), B[:, -1])  # train accuracy (on epoch end)
+plt.plot(np.arange(1, epochs + 1), B[:: -1])  # train accuracy (on epoch end)
 plt.plot(np.arange(1, epochs + 1), D)         #  test accuracy (on epoch end)
 # plt.plot(histories.losses_val)
 plt.title("training scores")
 plt.xlabel('epochs')
 plt.ylabel('accuracy')
 plt.legend(['train1', 'test'], loc="upper left")
-title = "/home/faltay/3DCNN/Results_9/fig_DEMENTIA_3DCNN.png"
+title = save_model_path+"fig_DEMENTIA_3DCNN.png"
 plt.savefig(title, dpi=600)
 # plt.close(fig)
 plt.show()

@@ -120,7 +120,7 @@ class CNN3D(nn.Module):
         
         self.ch1, self.ch2,self.ch3,self.ch4 ,self.ch5 = 48, 64 , 80 , 64, 48
         self.k1, self.k2, self.k3, self.k4, self.k5= (3, 3, 3),(3,3, 3), (3, 3, 3), (3, 3, 3) , (3, 3, 3)# 3d kernel size
-        self.s1, self.s2, self.s3, self.s4, self.s5= (1, 1, 1), (1, 2, 2) ,(1, 2, 2), (1, 2, 2) , (1, 2, 2)# 3d strides
+        self.s1, self.s2, self.s3, self.s4, self.s5= (1, 1, 1), (2, 2, 2) ,(2, 2, 2), (2, 2, 2) , (2, 2, 2)# 3d strides
         self.pd1, self.pd2,self.pd3,self.pd4,self.pd5= (0, 0, 0), (0, 0, 0),(0, 0, 0), (0, 0, 0) , (0, 0, 0) # 3d padding
 
         # compute conv1 & conv2 output shape

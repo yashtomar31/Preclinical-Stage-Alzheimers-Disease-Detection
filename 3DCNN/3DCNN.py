@@ -18,11 +18,11 @@ from numpy import save
 torch.cuda.empty_cache()
 
 # set path
-data_path = "/Users/yashtomar/Desktop/projects/gsa/Preclinical-Stage-Alzheimers-Disease-Detection/oasis"    
-dementia_labels_path = "/Users/yashtomar/Desktop/projects/gsa/Preclinical-Stage-Alzheimers-Disease-Detection/3DCNN/Labels_Binary.pkl"  # load preprocessed dementia types
-demential_train_file_label = "/Users/yashtomar/Desktop/projects/gsa/Preclinical-Stage-Alzheimers-Disease-Detection/oasis/train.txt"  
-save_model_path = "/Users/yashtomar/Desktop/projects/gsa/Preclinical-Stage-Alzheimers-Disease-Detection" 
-demential_val_file_label = "/Users/yashtomar/Desktop/projects/gsa/Preclinical-Stage-Alzheimers-Disease-Detection/oasis/val.txt"  
+data_path = "/home/ytomar2/Desktop/oasis/data"    
+dementia_labels_path = "/home/ytomar2/Desktop/3DCNN/Labels_Binary.pkl"  # load preprocessed dementia types
+demential_train_file_label = "/home/ytomar2/Desktop/file.csv"  
+save_model_path = "/home/ytomar2/Desktop/models" 
+
 
 # 3D CNN parameters
 fc_hidden1, fc_hidden2 = 256, 256
@@ -37,20 +37,16 @@ log_interval = 10
 img_x, img_y = 115 ,115  # resize video 2d frame size
 
 # Select which frame to begin & end in videos
-begin_frame, end_frame, skip_frame = 135, 151, 0
+begin_frame, end_frame, skip_frame = 70,190,1
 
 
-def getLabelMapping(demential_train_file_label,demential_val_file_label):
+def getLabelMapping(demential_train_file_label):
     dictFolderToLabel = {}
     with open(demential_train_file_label, 'r') as file:
         for line in file:
-                folder_name, label = line.strip().split()
+                folder_name, label = line.strip().split(',')
                 dictFolderToLabel[folder_name] = label
     
-    with open(demential_val_file_label, 'r') as file:
-        for line in file:
-                folder_name, label = line.strip().split()
-                dictFolderToLabel[folder_name] = label
     return(dictFolderToLabel)
 
 
@@ -144,6 +140,7 @@ def validation(model, device, optimizer, test_loader):
 # Detect devices
 use_cuda = torch.cuda.is_available()                   # check if GPU exists
 device_2 = torch.device("cuda" if use_cuda else "cpu")   # use CPU or GPU
+print(use_cuda,device_2)
 
 
 # load dementia types names
@@ -166,11 +163,10 @@ enc.fit(action_category)
 dementia_type = []
 fnames = os.listdir(data_path)
 
-dictFolderToLabel = getLabelMapping(demential_train_file_label,demential_val_file_label)
-print(dictFolderToLabel)
+dictFolderToLabel = getLabelMapping(demential_train_file_label)
 all_names = []
 for f in fnames:
-    if f != ".ipynb_checkpoints" and f != "train.txt" and f != "val.txt" and f != ".DS_Store": 
+    if f != ".ipynb_checkpoints" and f != "train.txt" and f != "val.txt" and f != ".DS_Store" and f!="images_tw1": 
         dementia_type.append(dictFolderToLabel[f])
         all_names.append(f)
             
@@ -205,7 +201,7 @@ transform = transforms.Compose([transforms.Resize([img_x, img_y]),
                                 transforms.ToTensor(),
                                 transforms.Normalize(mean=[0.5], std=[0.5])])
 
-selected_frames = np.arange(begin_frame, end_frame).tolist()
+selected_frames = np.arange(begin_frame, end_frame, skip_frame).tolist()
 
 train_set  = Dataset_3DCNN(data_path, train_list, train_label, selected_frames, transform=transform)
 valid_set = Dataset_3DCNN(data_path, val_list, val_label, selected_frames, transform=transform)
@@ -336,3 +332,4 @@ title = save_model_path+"fig_DEMENTIA_3DCNN.png"
 plt.savefig(title, dpi=600)
 # plt.close(fig)
 plt.show()
+

@@ -175,13 +175,94 @@ all_X_list = all_names              # all video file names
 all_y_list = labels2cat(le, dementia_type)    # all video labels
 
 # train, test, val split so no patients are repeated 
+patients = []
+labels = []
+prev = []
+index = 0
+
+for pat in all_X_list: 
+    prev.append(pat)
+for pat in all_X_list: 
+    if pat not in patients: 
+        index = prev.index(pat)        
+
+        patients.append(pat)
+        labels.append(dementia_type[index])
+
+## Undersampling process 
+i = 0
+for lab in labels: 
+    if lab == "0":
+        undersampling = np.random.choice([2,5], p=[0.9, 0.1])
+        if undersampling ==2:
+            del labels[i]
+            del patients[i]
 
 
-patients = all_X_list
-labels = all_y_list
+    i = i + 1
+i = 0
+
+for lab in labels: 
+    if lab == "0":
+        undersampling = np.random.choice([2,5], p=[0.4, 0.6])
+        if undersampling ==2:
+            del labels[i]
+            del patients[i]
+
+
+    i = i + 1
+    
 train_list_prev, val_list, train_label_prev, val_label = train_test_split(patients, labels, test_size=0.20, random_state=42)
 train_list,test_list , train_label, test_label = train_test_split(train_list_prev, train_label_prev, test_size=0.15, random_state=42) 
 
+train_list_def = []
+train_label_def = []
+
+for pat in train_list:
+    for scan in all_X_list: 
+        if pat == scan:
+            train_list_def.append(scan)
+
+for scan in train_list_def: 
+    index = all_X_list.index(scan)        
+    train_label_def.append(dementia_type[index])
+
+train_list = train_list_def
+train_label = np.array(train_label_def).astype(np.int32)   
+
+# Validation set 
+
+val_list_def = []
+val_label_def = []
+
+for pat in val_list:
+    for scan in all_X_list: 
+        if pat == scan:
+            val_list_def.append(scan)
+
+for scan in val_list_def: 
+    index = all_X_list.index(scan)        
+    val_label_def.append(dementia_type[index])
+
+val_list = val_list_def
+val_label = np.array(val_label_def).astype(np.int32)  
+
+# Test set 
+
+test_list_def = []
+test_label_def = []
+
+for pat in test_list:
+    for scan in all_X_list: 
+        if pat == scan:
+            test_list_def.append(scan)
+
+for scan in test_list_def: 
+    index = all_X_list.index(scan)        
+    test_label_def.append(dementia_type[index])
+
+test_list = test_list_def
+test_label = np.array(test_label_def).astype(np.int32) 
 
 # print("Size Dataset: ",len(all_X_list))
 # print("Train Dataset: ",len(train_list))

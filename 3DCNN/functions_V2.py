@@ -110,7 +110,7 @@ class CNN3D(nn.Module):
         super(CNN3D, self).__init__()
 
         # set video dimension
-        self.t_dim = t_dim
+        self.t_dim = 256
         self.img_x = img_x
         self.img_y = img_y
         # fully connected layer hidden nodes
@@ -199,6 +199,5 @@ class CNN3D(nn.Module):
         return x
 
 ## --------------------- end of 3D CNN module ---------------- ##
-
 
 

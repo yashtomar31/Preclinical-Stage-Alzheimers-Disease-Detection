@@ -23,7 +23,28 @@ dementia_labels_path = "/home/ytomar2/Desktop/3DCNN/Labels_Binary.pkl"  # load p
 demential_train_file_label = "/home/ytomar2/Desktop/file.csv"  
 save_model_path = "/home/ytomar2/Desktop/models" 
 
-
+dNotToTake = {
+'OAS30867_MR_d0161':1,
+'OAS30863_MR_d0171':1,
+'OAS30040_MR_d2899':1,
+'OAS30194_MR_d6419':1,
+'OAS30331_MR_d2229':1,
+'OAS30662_MR_d1483':1,
+'OAS30259_MR_d0679':1,
+'OAS30870_MR_d1926':1,
+'OAS30964_MR_d0397':1,
+'OAS30032_MR_d0262':1,
+'OAS30012_MR_d0124':1,
+'OAS30923_MR_d5307':1,
+'OAS30194_MR_d5837':1,
+'OAS30662_MR_d2080':1,
+'OAS30038_MR_d1214':1,
+'OAS30867_MR_d0647':1,
+'OAS30463_MR_d2198':1,
+'OAS30020_MR_d0092':1,
+'OAS31038_MR_d3010':1,
+'OAS30022_MR_d1324':1
+}
 # 3D CNN parameters
 fc_hidden1, fc_hidden2 = 256, 256
 dropout = 0.15        # dropout probability
@@ -166,7 +187,7 @@ fnames = os.listdir(data_path)
 dictFolderToLabel = getLabelMapping(demential_train_file_label)
 all_names = []
 for f in fnames:
-    if f != ".ipynb_checkpoints" and f != "train.txt" and f != "val.txt" and f != ".DS_Store" and f!="images_tw1": 
+    if f != ".ipynb_checkpoints" and f != "train.txt" and f != "val.txt" and f != ".DS_Store" and f!="images_tw1" and f not in dNotToTake: 
         dementia_type.append(dictFolderToLabel[f])
         all_names.append(f)
             
@@ -413,4 +434,3 @@ title = save_model_path+"fig_DEMENTIA_3DCNN.png"
 plt.savefig(title, dpi=600)
 # plt.close(fig)
 plt.show()
-
